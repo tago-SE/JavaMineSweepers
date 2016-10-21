@@ -82,7 +82,6 @@ public final class Controller {
         
         // Debug
         System.out.println("controller: victory!");
-        System.out.println(model.getAndServeRecentlyRevealedZones().size());
     }
 
     public void addGridSelectionHandles() {
