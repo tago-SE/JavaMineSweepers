@@ -131,7 +131,7 @@ public final class Controller {
                                     } 
                                 }
                                 
-                                else if (status == Status.ALIVE) {
+                                else if (status == Status.ALIVE || status == Status.READY) {
                                     for (Zone z : model.getAndServeRecentlyRevealedZones()) {
                                         view.revealTile(z.getX(), z.getY());
                                     }
