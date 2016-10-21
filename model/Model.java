@@ -3,19 +3,18 @@ package model;
 import java.util.ArrayList;
 
 public class Model {
-
     
     private final Clock clock;
     private Grid grid;
     private Difficulty difficulty;
     private int bombs;
     private boolean firstClicked;
-    private final ArrayList<Zone> recentlyRevealedZones = new ArrayList<>();
     private Status status;
     private int clearedZonesCount;
     private int flaggedZonesCount;
     private int totalClearedZonesNeeded;
     private ArrayList<Zone> flaggedZones;
+    private ArrayList<Zone> recentlyRevealedZones;
 
     
     public Model() {
@@ -34,13 +33,14 @@ public class Model {
             default: width = 0; height = 0; bombs = 0;
         }
         grid = new Grid(width, height, bombs);
-         clock.reset();
+        clock.reset();
         status = Status.READY;
         clearedZonesCount = 0;
         flaggedZonesCount = 0;
         totalClearedZonesNeeded = grid.getZoneCount() - bombs;
         firstClicked = false;
         flaggedZones = new ArrayList<>();
+        recentlyRevealedZones  = new ArrayList<>();
     }
    
     public void pause() {
