@@ -100,18 +100,18 @@ public final class Controller {
                         if ((status == Status.ALIVE) || (status == Status.READY)) {
                             // Flag
                             if (event.getButton() == MouseButton.SECONDARY) {
-                                    if (!model.isCleared(x, y)) {
-                                        model.toggleFlag(x, y);
-                                        if (model.isFlagged(x, y)) {
-                                            view.flagTile(x, y);
-                                            if (model.getStatus() == Status.VICTORIOUS) {
-                                                victory();
-                                            }
-                                        }
-                                        else {
-                                            view.unflagTile(x, y); 
+                                if (!model.isCleared(x, y)) {
+                                    model.toggleFlag(x, y);
+                                    if (model.isFlagged(x, y)) {
+                                        view.flagTile(x, y);
+                                        if (model.getStatus() == Status.VICTORIOUS) {
+                                            victory();
                                         }
                                     }
+                                    else {
+                                        view.unflagTile(x, y); 
+                                    }
+                                }
                             }
                         
                             else if (event.getButton() == MouseButton.PRIMARY){
