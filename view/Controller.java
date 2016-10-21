@@ -25,7 +25,6 @@ public final class Controller {
         this.addGridSelectionHandles();
     }  
     
-    
     public void handleBeginnerOption() {
         model.pause();
         if (view.alertRestart()) {
