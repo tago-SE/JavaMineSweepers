@@ -2,6 +2,8 @@ package view;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.Optional;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -22,10 +24,14 @@ import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextInputDialog;
+import javafx.scene.control.ToolBar;
+import javafx.scene.effect.Glow;
 import javafx.scene.effect.InnerShadow;
+import javafx.scene.effect.Lighting;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -40,24 +46,52 @@ import javafx.util.Pair;
 import model.Model;
 import model.Zone;
 
-public final class View extends BorderPane {
+public final class View extends BorderPane implements Observer {
+    private final ToolBar toolbar = new ToolBar();
     
     private Stage stage;
     private final Model model;
     private final VBox vbox = new VBox();               // Move to menu section?
     private Tile[][] tile;                         // Are we removing this or what?
     private GridPane gridPane;
-   
+    private HBox Hbox = new HBox();
+    private Score score;
+    private Label label ;
+    
     public View(Stage someStage, Model model_) {
         model = model_;
         stage = someStage;
-        this.setStyle("-fx-background-color: #D8BFD8;");   
+        this.setStyle("-fx-background-color: #D8BFD8;");
+        score = new Score();
         Scene scene = new Scene(this);
         initGridInterface();
-        initMenu(); 
+        initMenu();
+        initToolbar();
+        
         stage.setTitle("Minesweepers");
         stage.setScene(scene);
-        stage.show();    
+        stage.show();
+        
+    }
+    
+    public void initToolbar(){
+        Hbox.setPadding(new Insets(10, 20, 20, 50));
+        Hbox.setSpacing(10);
+        
+        label = new Label("00:00");
+        
+        label.setStyle("-fx-font-size: 25px; -fx-text-fill: yellow;-fx-background-color: black;-fx-padding: 10px");
+        label.setEffect(new Glow());
+        label.setMaxWidth(250);
+        label.setWrapText(true);
+        
+        
+        //vbox.setSpacing(10);
+        toolbar.setEffect(new Lighting());
+        toolbar.getItems().add(Hbox);
+        
+        Hbox.getChildren().addAll(label);
+        vbox.getChildren().add(toolbar);
     }
     
     public void addEventHandlers(Controller controller) {
@@ -84,7 +118,7 @@ public final class View extends BorderPane {
         MenuBar menuBar = new MenuBar();
         menuFile.getItems().addAll(optRestart, optPauseOrResume, optSave, optLoad, optExit);
         menuDifficulty.getItems().addAll(optBeginner, optIntermediate, optAdvanced);
-        menuOptions.getItems().add(menuDifficulty);        
+        menuOptions.getItems().add(menuDifficulty);
         menuBar.getMenus().addAll(menuFile, menuOptions, menuHelp);
         vbox.getChildren().add(menuBar);
         this.setTop(vbox);
@@ -122,7 +156,7 @@ public final class View extends BorderPane {
         optPauseOrResume.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                controller.handlePauseOption(); 
+                controller.handlePauseOption();
             }
         });
         
@@ -153,9 +187,10 @@ public final class View extends BorderPane {
     // *************************************************************************
     
     public void initGridInterface(){
+        score.setScoreToZero();
         int xMax = model.getGrid().getNumColumns();
         int yMax = model.getGrid().getNumRows();
-        if (gridPane == null) 
+        if (gridPane == null)
             gridPane = new GridPane();
         else {
             this.getChildren().remove(gridPane);
@@ -175,6 +210,7 @@ public final class View extends BorderPane {
                 gridPane.add(tile[x][y], x, y);
             }
         }
+        //   this.initToolbar();
         this.setBottom(gridPane);
     }
     
@@ -190,6 +226,7 @@ public final class View extends BorderPane {
     
     public void detonateTile(int x, int y) {
         tile[x][y].setColor(Color.RED);
+        // tile[x][y].viewText(string);
     }
     
     public void flagTile(int x, int y) {
@@ -203,9 +240,9 @@ public final class View extends BorderPane {
     public void revealTile(int x, int y) {
         int numberOfBombs = model.getNearbyBombs(x, y);
         if (numberOfBombs != 0) {
-            tile[x][y].viewText("" + numberOfBombs);
+            tile[x][y].viewText("" + numberOfBombs, Color.BEIGE);
         }
-            tile[x][y].setColor(Color.WHITE);  
+        tile[x][y].setColor(Color.WHITE);
     }
     
     // *************************************************************************
@@ -249,5 +286,12 @@ public final class View extends BorderPane {
             name = result.get();
         };
         return name;
+    }
+    
+    @Override
+    public void update(Observable o, Object arg) {
+        score.increaseScore();
+        System.out.println(score.toString());
+        label.setText(String.valueOf(score.getScore()));
     }
 }
