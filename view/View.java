@@ -1,5 +1,18 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
 package view;
 
+/**
+ *
+ * @author T.Redaelli, Nordlund
+ */
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Observable;
@@ -39,14 +52,17 @@ import javafx.scene.layout.VBoxBuilder;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
+import javafx.stage.FileChooser;
+import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Pair;
 
 import model.Model;
 import model.Zone;
+import model.Score;
 
-public final class View extends BorderPane implements Observer {
+public final class View extends BorderPane implements Observer,Serializable{
     private final ToolBar toolbar = new ToolBar();
     
     private Stage stage;
@@ -57,7 +73,12 @@ public final class View extends BorderPane implements Observer {
     private HBox Hbox = new HBox();
     private Score score;
     private Label label ;
-    
+    /**
+     * Constructor for single view
+     * @param someStage
+     * @param model_ 
+     * also provides scene with root node.
+     */
     public View(Stage someStage, Model model_) {
         model = model_;
         stage = someStage;
@@ -73,13 +94,17 @@ public final class View extends BorderPane implements Observer {
         stage.show();
         
     }
-    
+    /**
+     * initializes toolbar. 
+     * Where we see the score
+     */
     public void initToolbar(){
         Hbox.setPadding(new Insets(10, 20, 20, 50));
         Hbox.setSpacing(10);
-        
+        //Method of using CSS on controller superclass
+        //insipired by jewelsea
+        //http://stackoverflow.com/questions/25042517/javafx-2-resizable-rectangle-containing-text
         label = new Label("00:00");
-        
         label.setStyle("-fx-font-size: 25px; -fx-text-fill: yellow;-fx-background-color: black;-fx-padding: 10px");
         label.setEffect(new Glow());
         label.setMaxWidth(250);
@@ -93,7 +118,10 @@ public final class View extends BorderPane implements Observer {
         Hbox.getChildren().addAll(label);
         vbox.getChildren().add(toolbar);
     }
-    
+    /**
+     * initialize eventhandlers
+     * @param controller 
+     */
     public void addEventHandlers(Controller controller) {
         initMenuEventHandlers(controller);
     }
@@ -113,7 +141,9 @@ public final class View extends BorderPane implements Observer {
     private MenuItem optBeginner = new MenuItem("Beginner");
     private MenuItem optIntermediate = new MenuItem("Intermediate");
     private MenuItem optAdvanced = new MenuItem("Advanced");
-    
+    /**
+     * Initialize menu
+     */
     private void initMenu() {
         MenuBar menuBar = new MenuBar();
         menuFile.getItems().addAll(optRestart, optPauseOrResume, optSave, optLoad, optExit);
@@ -123,7 +153,11 @@ public final class View extends BorderPane implements Observer {
         vbox.getChildren().add(menuBar);
         this.setTop(vbox);
     }
-    
+    /**
+     * 
+     * @param controller 
+     * event on beginner setting
+     */
     private void initMenuEventHandlers(Controller controller) {
         optBeginner.setOnAction(new EventHandler<ActionEvent>() {
             @Override
@@ -131,49 +165,93 @@ public final class View extends BorderPane implements Observer {
                 controller.handleBeginnerOption();
             }
         });
-        
+        /**
+     * 
+     * @param controller 
+     * event on beginner intermediate
+     */
         optIntermediate.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
                 controller.handleIntermediateOption();
             }
         });
-        
+            /**
+     * 
+     * @param controller 
+     * event on beginner advance
+     */
         optAdvanced.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
                 controller.handleAdvancedOption();
             }
         });
-        
+            /**
+     * 
+     * @param controller 
+     * event for resetting game
+     */
         optRestart.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
                 controller.handleResetOption();
             }
         });
-        
+     /* 
+     * @param controller 
+     * event for pause/resume game
+     */
         optPauseOrResume.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
                 controller.handlePauseOption();
             }
         });
-        
+    /* 
+     * @param controller 
+     * event for saving game
+     */
         optSave.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
                 System.out.println("Save!");
-            }
+            //    FileChooser choose = new FileChooser();
+            //    choose.getExtensionFilters().add(new FileChooser.ExtensionFilter("Text doc(*.txt)", "*.txt"));
+                 FileChooser chooser = new FileChooser();
+	    chooser.getExtensionFilters().add(new ExtensionFilter("Edge files", "*.ser"));  
+            File f = chooser.showSaveDialog(stage);
+            ArrayList<String> list = new ArrayList<String>();
+            list.add("thing");
+            list.add("Safas");
+                //if(!f.getName().contains(".")) {
+                // f = new File(f.getAbsolutePath() + ".txt");
+                // System.out.println("saa");
+                 // }
+                  if (f != null) {
+	            try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(f))) {
+	                out.writeObject(list);
+                        System.out.println("F");
+	            } catch (Exception exc) {
+	                exc.printStackTrace();
+	            }
+	        }
+               }
         });
-        
+         /* 
+     * @param controller 
+     * event for loading game
+     */
         optLoad.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
                 System.out.println("Load!");
             }
         });
-        
+         /* 
+     * @param controller 
+     * event for exiting game
+     */
         optExit.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
@@ -185,7 +263,10 @@ public final class View extends BorderPane implements Observer {
     // *************************************************************************
     // Grid
     // *************************************************************************
-    
+    /**
+     * paint a grid with custom made
+     * tiles
+     */
     public void initGridInterface(){
         score.setScoreToZero();
         int xMax = model.getGrid().getNumColumns();
@@ -213,30 +294,55 @@ public final class View extends BorderPane implements Observer {
         //   this.initToolbar();
         this.setBottom(gridPane);
     }
-    
+    /**
+     * 
+     * @param x
+     * @param y
+     * @returns specific tile
+     */
     public Tile getTile(int x, int y) {
         return tile[x][y];
     }
-    
+    /**
+     * sets tile Black
+     * @param x
+     * @param y 
+     */
     private void setDefaultTile(int x, int y) {
         tile[x][y].setColor(Color.BLACK);
         tile[x][y].setEffect(new InnerShadow());
     }
     
-    
+    /**
+     * Colors the tile red at explosion
+     * @param x
+     * @param y 
+     */
     public void detonateTile(int x, int y) {
         tile[x][y].setColor(Color.RED);
         // tile[x][y].viewText(string);
     }
-    
+    /**
+     * Flag the tiles, turn it blue
+     * @param x
+     * @param y 
+     */
     public void flagTile(int x, int y) {
         tile[x][y].setColor(Color.BLUE);
     }
-    
+    /**
+     * unflag the tile
+     * @param x
+     * @param y 
+     */
     public void unflagTile(int x, int y) {
         this.setDefaultTile(x, y);
     }
-    
+    /**
+     * reveal the tile change to safe white color
+     * @param x
+     * @param y 
+     */
     public void revealTile(int x, int y) {
         int numberOfBombs = model.getNearbyBombs(x, y);
         if (numberOfBombs != 0) {
@@ -248,7 +354,9 @@ public final class View extends BorderPane implements Observer {
     // *************************************************************************
     // Alerts
     // *************************************************************************
-    
+    /**
+     * Alert menu
+     */
     public void alertPause() {
         Alert alert = new Alert(AlertType.INFORMATION);
         alert.setTitle("Paused");
@@ -256,7 +364,10 @@ public final class View extends BorderPane implements Observer {
         alert.setContentText("Press OK to resume.");
         alert.showAndWait();
     }
-    
+    /**
+     * Alert restart, when you want to reset
+     * @returns a boolean
+     */
     public boolean alertRestart() {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Reset Confirmation");
@@ -265,7 +376,10 @@ public final class View extends BorderPane implements Observer {
         Optional<ButtonType> result = alert.showAndWait();
         return result.get() == ButtonType.OK;
     }
-    
+    /**
+     * pop-up window, to restart game
+     * @return 
+     */
     public boolean alertGameOver() {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Game Over");
@@ -274,7 +388,10 @@ public final class View extends BorderPane implements Observer {
         Optional<ButtonType> result = alert.showAndWait();
         return result.get() == ButtonType.OK;
     }
-    
+    /**
+     *  alert window in case of victory
+     * @return 
+     */    
     public String alertVictory() {
         String name = "Anonymous";
         TextInputDialog dialog = new TextInputDialog(name);
@@ -287,11 +404,15 @@ public final class View extends BorderPane implements Observer {
         };
         return name;
     }
-    
+    /**
+     * reseive update from observables.
+     * @param o 
+     * @param arg 
+     */
     @Override
     public void update(Observable o, Object arg) {
         score.increaseScore();
         System.out.println(score.toString());
         label.setText(String.valueOf(score.getScore()));
     }
-}
+} 
