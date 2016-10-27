@@ -1,9 +1,14 @@
 package model;
 
-import java.util.ArrayList;
-import java.util.Observable;
+/**
+ *
+ * @author T. Redaelli A.Nordlund 
+ */
 
-public class Model extends Observable{
+import java.io.Serializable;
+import java.util.ArrayList;
+
+public class Model implements Serializable{
     
     private final Clock clock;
     private Grid grid;
@@ -17,14 +22,20 @@ public class Model extends Observable{
     private ArrayList<Zone> flaggedZones;
     private ArrayList<Zone> recentlyRevealedZones;
     
-    
+    /**
+     *  Model constructor initalizes clock and 
+     *  grid
+     */
     public Model() {
         clock = new Clock();
-        grid = new Grid(0, 0, 0);
+        grid = new Grid(0, 0, 0); 
         difficulty = Difficulty.BEGINNER;
-        
-    }
-    
+   }
+    /**
+     * initalizes a new round based
+     * on chosen difficulty
+     * initializes flags
+     */
     public void initNewRound() {
         int width;
         int height;
@@ -44,39 +55,55 @@ public class Model extends Observable{
         flaggedZones = new ArrayList<>();
         recentlyRevealedZones  = new ArrayList<>();
     }
-    
+   /**
+    * Pauses the clock
+    */
     public void pause() {
         if (clock.isRunning() && firstClicked) {
             clock.pause();
         }
     }
-    
+    /**
+     * Unpauses the clock
+     */
     public void resume() {
         if (!clock.isRunning() && firstClicked) {
             clock.resume();
         }
     }
+    /**
+     * 
+     * @param d 
+     * uses Difficulty enum to decide 
+     * upon the size of the grid
+     */
     
     public void setDifficulty(Difficulty d) {
         difficulty = d;
     }
-    
+    /**
+     * 
+     * @param zone 
+     */
     private void reveal(Zone zone) {
         if (!zone.isShown()) {
-            setChanged();
-            notifyObservers();
-            System.out.println("n");
             zone.show();
             recentlyRevealedZones.add(zone);
             clearedZonesCount++;
             debugInfo();
             for (Zone z : zone.getAdjacentZones()) {
-                reveal(z);
+                reveal(z);  
             }
         }
     }
-    
-    private boolean victoryConditions() {
+  /**
+   * 
+   * @return boolean values that
+   * corresponds on victory terms.
+   * player can lose if zone
+   * clicked has a bomb
+   */
+    private boolean victoryConditions() { 
         if (!((clearedZonesCount == totalClearedZonesNeeded) && (flaggedZonesCount + clearedZonesCount == totalClearedZonesNeeded + bombs))) {
             return false;
         }
@@ -100,7 +127,12 @@ public class Model extends Observable{
         System.out.print(" --- Cleared: " + clearedZonesCount);
         System.out.println(" --- Progress: " + clearedZonesCount + "/" + totalClearedZonesNeeded);
     }
-    
+    /**
+     * 
+     * @param x 
+     * @param y 
+     * which row & column was clicked.
+     */
     public void clearZone(int x, int y) {
         if (!firstClicked) {
             firstClicked = true;
@@ -110,7 +142,6 @@ public class Model extends Observable{
         
         if (zone.isFlagged()) {
             toggleFlag(x, y);
-            
         }
         
         if (zone.hasBomb()) {
@@ -120,27 +151,32 @@ public class Model extends Observable{
             reveal(zone);
             status = Status.ALIVE;
             if (victoryConditions()) {
-                victory();
-            }
+                    victory();
+             }
         }
     }
-    
+    /**
+     * 
+     * @return Enum value that corresponds
+     * with status of the game
+     */
     public Status getStatus() {
         return status;
     }
     
     public boolean isCleared(int x, int y) {
-        
         return grid.getZone(x, y).isShown();
     }
     
     public boolean isFlagged(int x, int y) {
-        
         return grid.getZone(x, y).isFlagged();
-        
     }
     
     public void toggleFlag(int x, int y) {
+        if (!firstClicked) {
+            firstClicked = true;
+            clock.start();
+        }
         Zone zone = grid.getZone(x, y);
         if (!zone.isShown()) {
             if (zone.isFlagged()) {
@@ -159,15 +195,24 @@ public class Model extends Observable{
             }
         }
     }
-    
+    /**
+     * 
+     * @return grid 
+     */
     public Grid getGrid() {
         return grid;
     }
-    
+    /**
+     * 
+     * @return  list of explosives
+     */
     public ArrayList<Zone> getAllExplosiveZones() {
         return grid.getExplosiveZones();
     }
-    
+    /**
+     * 
+     * @return 
+     */
     public ArrayList<Zone> getAndServeRecentlyRevealedZones() {
         ArrayList<Zone> tmp = new ArrayList<>();
         for (Zone z: recentlyRevealedZones) {
@@ -176,12 +221,21 @@ public class Model extends Observable{
         recentlyRevealedZones.clear();
         return tmp;
     }
-    
+   /**
+    * 
+    * @return elapsed time in seconds 
+    */
     public int getElapsedSeconds() {
         return clock.getElapsedSeconds();
     }
-    
+    /**
+     * 
+     * @param x
+     * @param y
+     * @return nearby bombs 
+     */
     public int getNearbyBombs(int x, int y) {
         return grid.getZone(x, y).getNearbyBombs();
-    }
+    }  
 }
+
